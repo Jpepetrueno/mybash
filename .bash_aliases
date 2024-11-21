@@ -3,27 +3,25 @@
 # To temporarily bypass an alias, we precede the command with a \
 # EG: the ls command is aliased, but to use the normal ls command you would type \ls
 
-# EDITOR ALIAS'S
 # Aliases for common text editors
-alias e='emacsclient -c -a emacs' # Open Emacs client
-alias vi='nvim'                   # Open Neovim as vi
-alias vim='nvim'                  # Open Neovim as vim
-alias se='sudo e'                 # Open Emacs client with sudo privileges
-alias svi='sudo nvim'             # Open Neovim with sudo privileges
-alias vis='nvim "+set si"'        # Open Neovim with smartindent
-alias ebrc='nvim ~/.bashrc'       # Edit .bashrc file using Neovim
-alias hlp='less ~/.bashrc_help'   # Show help for this .bashrc file using less
+alias e='emacsclient -c -a emacs'   # Open Emacs client
+alias vi='nvim'                     # Open Neovim as vi
+alias vim='nvim'                    # Open Neovim as vim
+alias se='sudo e'                   # Open Emacs client with sudo privileges
+alias svi='sudo nvim'               # Open Neovim with sudo privileges
+alias vis='nvim "+set si"'          # Open Neovim with smartindent
+alias ebrc='nvim $HOME/.bashrc'     # Edit .bashrc file using Neovim
+alias hlp='less $HOME/.bashrc_help' # Show help for this .bashrc file using less
 
-# NAVIGATOR ALIAS'S
 # Aliases for navigating directories
 # Change directory aliases
-alias home='cd ~'            # Go to home directory
+alias home='cd $HOME'        # Go to home directory
+alias bd='cd $OLDPWD'        # Go to previous directory (using $OLDPWD)
 alias cd..='cd ..'           # Go to parent directory
 alias ..='cd ..'             # Go to parent directory (alternative)
 alias ...='cd ../..'         # Go to grandparent directory
 alias ....='cd ../../..'     # Go to great-grandparent directory
 alias .....='cd ../../../..' # Go to great-great-grandparent directory
-alias bd='cd "$OLDPWD"'      # Go to previous directory (using $OLDPWD)
 
 # Replace batcat with cat on Fedora as batcat is not available as a RPM in any form
 if command -v lsb_release >/dev/null; then
@@ -52,11 +50,9 @@ alias cp='cp -i'                           # Ask before overwriting when copying
 alias mv='mv -i'                           # Ask before overwriting when moving files
 alias rm='trash -v'                        # Move files to trash instead of deleting
 alias mkdir='mkdir -p'                     # Create parent directories if they don't exist
-alias ps='ps auxf'                         # Show all processes in a tree-like format
 alias ping='ping -c 10'                    # Send 10 ping requests by default
 alias less='less -R'                       # Enable raw output in less
 alias cls='clear'                          # Clear the terminal screen
-alias apt-get='sudo apt-get'               # Run apt-get with sudo privileges
 alias multitail='multitail --no-repeat -c' # Multitail with no repeat and color
 alias freshclam='sudo freshclam'           # Update ClamAV database with sudo privileges
 
@@ -80,7 +76,7 @@ alias labc='ls -lap'              # List files in alphabetical order
 alias lf="ls -l | egrep -v '^d'"  # List only files (not directories)
 alias ldir="ls -l | egrep '^d'"   # List only directories
 
-# alias chmod commands
+# Alias chmod commands
 alias mx='chmod a+x'     # Add execute permission for all users
 alias 000='chmod -R 000' # Remove all permissions for all users
 alias 644='chmod -R 644' # Set read and write permissions for owner, read permission for group and others
@@ -89,16 +85,19 @@ alias 755='chmod -R 755' # Set read, write, and execute permissions for owner, r
 alias 777='chmod -R 777' # Set read, write, and execute permissions for all users
 
 # Search command line history
-alias h="history | grep " # Search through command history
+alias history_grep="history | grep " # Search through command history
 
 # Search running processes
-alias p="ps aux | grep " # Search for processes by keyword
+alias procs="ps aux | grep " # Search for processes by keyword
 
 # Show top CPU-consuming processes
-alias topcpu="/bin/ps -eo pcpu,pid,user,args | sort -k 1 -r | head -10" # List top 10 CPU-consuming processes
+alias topcpu="echo \"\$(ps -Ao user,uid,comm,pid,pcpu,pmem --sort=-pcpu | head -n 11)\""
+
+# Show top memory-consuming processes
+alias topmem="echo \"\$(ps -Ao user,uid,comm,pid,pcpu,pmem,rss --sort=-rss | head -n 11)\""
 
 # Search files in the current folder
-alias f="find . | grep " # Search for files in the current directory
+alias findhere="find . | grep " # Search for files in the current directory
 
 # Count all files (recursively) in the current folder
 alias countfiles="for t in files links directories; do echo \`find . -type \${t:0:1} | wc -l\` \$t; done 2> /dev/null" # Count files, links, and directories in the current directory
@@ -114,12 +113,11 @@ alias rebootsafe='sudo shutdown -r now'     # Reboot the system safely
 alias rebootforce='sudo shutdown -r -n now' # Reboot the system forcefully
 
 # Alias's to show disk space and space used in a folder
-alias diskspace="du -S | sort -n -r |more"                                          # Show disk space usage in the current directory
-alias folders='du -h --max-depth=1'                                                 # Show disk space usage of subfolders
-alias folderssort='find . -maxdepth 1 -type d -print0 | xargs -0 du -sk | sort -rn' # Sort subfolders by disk space usage
-alias tree='tree -CAhF --dirsfirst'                                                 # Show a tree-like directory structure
-alias treed='tree -CAFd'                                                            # Show a tree-like directory structure with directories only
-alias mountedinfo='df -hT'                                                          # Show mounted file systems and their disk space usage
+alias diskspace="du -h | sort -n -r | more" # Show disk space usage in the current directory
+alias folderusage='du -h --max-depth=1'     # Show disk space usage of subfolders
+alias tree='tree -CAhF --dirsfirst'         # Show a tree-like directory structure
+alias treedirs='tree -d'                    # Show a tree-like directory structure with directories only
+alias mountedinfo='df -hT'                  # Show mounted file systems and their disk space usage
 
 # Alias's for archives
 alias mktar='tar -cvf'  # Create a tar archive
@@ -135,24 +133,11 @@ alias logs="sudo find /var/log -type f -exec file {} \; | grep 'text' | cut -d' 
 # SHA1
 alias sha1='openssl sha1' # Generate a SHA1 hash
 
+# Useful for avoiding accidental pastes or giving time to move the cursor to the correct position
 alias clickpaste='sleep 3; xdotool type "$(xclip -o -selection clipboard)"' # Paste clipboard contents after 3 seconds
-
-# KITTY - alias to be able to use kitty features when connecting to remote servers(e.g use tmux on remote server)
-alias kssh="kitty +kitten ssh" # Connect to a remote server using kitty
 
 # IP address lookup
 alias whatismyip="whatsmyip" # Get the current public IP address
 
-# alias for hugo server
-alias hug="hugo server -F --bind=10.0.0.97 --baseURL=http://10.0.0.97" # Start a Hugo server on a specific IP address and port
-
-# Alias's for SSH
-# alias SERVERNAME='ssh YOURWEBSITE.com -l USERNAME -p PORTNUMBERHERE'  # Connect to a remote server via SSH (example)
-
 # Alias's to change the directory
-alias web='cd /var/www/html' # Quickly navigate to the web server directory
-
-# Alias's to mount ISO files
-# mount -o loop /home/NAMEOFISO.iso /home/ISOMOUNTDIR/  # Mount an ISO file as a loop device (requires root)
-# umount /home/NAMEOFISO.iso  # Unmount an ISO file (requires root)
-# (Both commands done as root only.)
+alias web='cd /var/www/html' # Quickly navigate to the web server directory (Apache root directory)
