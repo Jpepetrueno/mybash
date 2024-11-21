@@ -1,22 +1,23 @@
-#######################################################
-# SPECIAL FUNCTIONS
-#######################################################
-# Extracts any archive(s) (if unp isn't installed)
+# .bash_functions
+
+# Extracts one or more archives using the appropriate command based on the file extension
+# Supports various archive formats, including tar, zip, rar, 7z, and more
+# If the 'unp' command is not installed, this function can be used as a fallback
 extract() {
 	for archive in "$@"; do
 		if [ -f "$archive" ]; then
-			case $archive in
-			*.tar.bz2) tar xvjf $archive ;;
-			*.tar.gz) tar xvzf $archive ;;
-			*.bz2) bunzip2 $archive ;;
-			*.rar) rar x $archive ;;
-			*.gz) gunzip $archive ;;
-			*.tar) tar xvf $archive ;;
-			*.tbz2) tar xvjf $archive ;;
-			*.tgz) tar xvzf $archive ;;
-			*.zip) unzip $archive ;;
-			*.Z) uncompress $archive ;;
-			*.7z) 7z x $archive ;;
+			case "$archive" in
+			*.tar.bz2) tar xvjf "$archive" ;; # Extracts a tar.bz2 archive
+			*.tar.gz) tar xvzf "$archive" ;;  # Extracts a tar.gz archive
+			*.bz2) bunzip2 "$archive" ;;      # Extracts a bz2 archive
+			*.rar) rar x "$archive" ;;        # Extracts a rar archive
+			*.gz) gunzip "$archive" ;;        # Extracts a gz archive
+			*.tar) tar xvf "$archive" ;;      # Extracts a tar archive
+			*.tbz2) tar xvjf "$archive" ;;    # Extracts a tbz2 archive
+			*.tgz) tar xvzf "$archive" ;;     # Extracts a tgz archive
+			*.zip) unzip "$archive" ;;        # Extracts a zip archive
+			*.Z) uncompress "$archive" ;;     # Extracts a Z archive
+			*.7z) 7z x "$archive" ;;          # Extracts a 7z archive
 			*) echo "don't know how to extract '$archive'..." ;;
 			esac
 		else
@@ -66,7 +67,8 @@ cpg() {
 	fi
 }
 
-# Move and go to the directory
+# Move a file or directory and go to the directory if the destination is a directory,
+# otherwise just move the file.
 mvg() {
 	if [ -d "$2" ]; then
 		mv "$1" "$2" && cd "$2"
@@ -75,13 +77,16 @@ mvg() {
 	fi
 }
 
-# Create and go to the directory
+# Create a directory and go to it.
 mkdirg() {
 	mkdir -p "$1"
 	cd "$1"
 }
 
-# Goes up a specified number of directories  (i.e. up 4)
+# Goes up a specified number of directories
+#
+# Examples:
+# up 4  (i.e. up 4)
 up() {
 	local d=""
 	limit=$1
@@ -95,9 +100,10 @@ up() {
 	cd $d
 }
 
-# Automatically do an ls after each cd, z, or zoxide
-cd ()
-{
+# Changes the current directory and lists its contents.
+# If a directory is specified as an argument, it navigates to that directory and runs `ls`.
+# If no argument is given, it defaults to the home directory.
+cd() {
 	if [ -n "$1" ]; then
 		builtin cd "$@" && ls
 	else
@@ -105,124 +111,155 @@ cd ()
 	fi
 }
 
-# Returns the last 2 fields of the working directory
+# Print the last 2 fields of the working directory, joined by a slash.
+# Example: If the current working directory is /a/b/c/d, this function will print "c/d".
 pwdtail() {
 	pwd | awk -F/ '{nlast = NF -1;print $nlast"/"$NF}'
 }
 
-# Show the current distribution
-distribution ()
-{
-	local dtype="unknown"  # Default to unknown
+# This function inspects /etc/os-release and returns a string identifying the
+# distribution type. The returned strings are one of: redhat, suse, debian,
+# gentoo, arch, slackware, or unknown.
+distribution() {
+	local dtype="unknown" # Default to unknown
 
 	# Use /etc/os-release for modern distro identification
 	if [ -r /etc/os-release ]; then
 		source /etc/os-release
 		case $ID in
-			fedora|rhel|centos)
-				dtype="redhat"
-				;;
-			sles|opensuse*)
-				dtype="suse"
-				;;
-			ubuntu|debian)
-				dtype="debian"
-				;;
-			gentoo)
-				dtype="gentoo"
-				;;
-			arch)
-				dtype="arch"
-				;;
-			slackware)
-				dtype="slackware"
-				;;
-			*)
-				# If ID is not recognized, keep dtype as unknown
-				;;
+		fedora | rhel | centos)
+			dtype="redhat"
+			;;
+		sles | opensuse*)
+			dtype="suse"
+			;;
+		ubuntu | debian)
+			dtype="debian"
+			;;
+		gentoo)
+			dtype="gentoo"
+			;;
+		arch)
+			dtype="arch"
+			;;
+		slackware)
+			dtype="slackware"
+			;;
+		*)
+			# If ID is not recognized, keep dtype as unknown
+			;;
 		esac
 	fi
 
 	echo $dtype
 }
 
-# Show the current version of the operating system
+# Show the current version of the operating system.
+# This function attempts to display the current version of the operating system,
+# depending on the distribution type. The method used is distribution-dependent:
+#
+# - Red Hat/Fedora: /etc/redhat-release or /etc/issue
+# - SuSE/OpenSuSE: /etc/SuSE-release
+# - Debian: lsb_release -a
+# - Gentoo: /etc/gentoo-release
+# - Arch: /etc/os-release
+# - Slackware: /etc/slackware-version
+#
+# If the distribution type is not recognized, it will display the contents of
+# /etc/issue if available, and exit with an error code otherwise.
 ver() {
 	local dtype
 	dtype=$(distribution)
 
 	case $dtype in
-		"redhat")
-			if [ -s /etc/redhat-release ]; then
-				cat /etc/redhat-release
-			else
-				cat /etc/issue
-			fi
-			uname -a
-			;;
-		"suse")
-			cat /etc/SuSE-release
-			;;
-		"debian")
-			lsb_release -a
-			;;
-		"gentoo")
-			cat /etc/gentoo-release
-			;;
-		"arch")
-			cat /etc/os-release
-			;;
-		"slackware")
-			cat /etc/slackware-version
-			;;
-		*)
-			if [ -s /etc/issue ]; then
-				cat /etc/issue
-			else
-				echo "Error: Unknown distribution"
-				exit 1
-			fi
-			;;
+	"redhat")
+		if [ -s /etc/redhat-release ]; then
+			cat /etc/redhat-release
+		else
+			cat /etc/issue
+		fi
+		uname -a
+		;;
+	"suse")
+		cat /etc/SuSE-release
+		;;
+	"debian")
+		lsb_release -a
+		;;
+	"gentoo")
+		cat /etc/gentoo-release
+		;;
+	"arch")
+		cat /etc/os-release
+		;;
+	"slackware")
+		cat /etc/slackware-version
+		;;
+	*)
+		if [ -s /etc/issue ]; then
+			cat /etc/issue
+		else
+			echo "Error: Unknown distribution"
+			exit 1
+		fi
+		;;
 	esac
 }
 
-# Automatically install the needed support files for this .bashrc file
+# Automatically install the needed support files for this .bashrc file based on the
+# Linux distribution type.
+#
+# Supported distributions:
+#
+# - Red Hat/CentOS/Fedora
+# - SuSE/OpenSuSE
+# - Debian/Ubuntu
+# - Arch Linux
+# - Slackware
+#
+# Note: On Arch Linux, this function will install the needed packages using paru, which
+# is a popular AUR helper. If you don't have paru installed, you'll need to install it
+# first.
 install_bashrc_support() {
 	local dtype
 	dtype=$(distribution)
 
 	case $dtype in
-		"redhat")
-			sudo yum install multitail tree zoxide trash-cli fzf bash-completion fastfetch
-			;;
-		"suse")
-			sudo zypper install multitail tree zoxide trash-cli fzf bash-completion fastfetch
-			;;
-		"debian")
-			sudo apt-get install multitail tree zoxide trash-cli fzf bash-completion
-			# Fetch the latest fastfetch release URL for linux-amd64 deb file
-			FASTFETCH_URL=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep "browser_download_url.*linux-amd64.deb" | cut -d '"' -f 4)
-			
-			# Download the latest fastfetch deb file
-			curl -sL $FASTFETCH_URL -o /tmp/fastfetch_latest_amd64.deb
-			
-			# Install the downloaded deb file using apt-get
-			sudo apt-get install /tmp/fastfetch_latest_amd64.deb
-			;;
-		"arch")
-			sudo paru multitail tree zoxide trash-cli fzf bash-completion fastfetch
-			;;
-		"slackware")
-			echo "No install support for Slackware"
-			;;
-		*)
-			echo "Unknown distribution"
-			;;
+	"redhat")
+		sudo dnf install multitail tree zoxide trash-cli fzf bash-completion fastfetch
+		;;
+	"suse")
+		sudo zypper install multitail tree zoxide trash-cli fzf bash-completion fastfetch
+		;;
+	"debian")
+		sudo apt-get install multitail tree zoxide trash-cli fzf bash-completion
+		# Fetch the latest fastfetch release URL for linux-amd64 deb file
+		FASTFETCH_URL=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep "browser_download_url.*linux-amd64.deb" | cut -d '"' -f 4)
+
+		# Download the latest fastfetch deb file
+		curl -sL "$FASTFETCH_URL" -o /tmp/fastfetch_latest_amd64.deb
+
+		# Install the downloaded deb file using apt-get
+		sudo apt-get install /tmp/fastfetch_latest_amd64.deb
+		;;
+	"arch")
+		sudo paru multitail tree zoxide trash-cli fzf bash-completion fastfetch
+		;;
+	"slackware")
+		echo "No install support for Slackware"
+		;;
+	*)
+		echo "Unknown distribution"
+		;;
 	esac
 }
 
-function whatsmyip ()
-{
+# Print your internal and external IP addresses.
+#
+# This function will print your internal IP address using the ip or ifconfig
+# command, depending on the system, and your external IP address as reported
+# by ifconfig.me.
+function whatsmyip() {
 	# Internal IP Lookup.
 	if [ -e /sbin/ip ]; then
 		echo -n "Internal IP: "
@@ -238,6 +275,10 @@ function whatsmyip ()
 }
 
 # View Apache logs
+# This function will navigate to the Apache log directory
+# appropriate for your system (httpd or apache2), list all
+# files in reverse chronological order, and then use multitail
+# to view the last two of them.
 apachelog() {
 	if [ -f /etc/httpd/conf/httpd.conf ]; then
 		cd /var/log/httpd && ls -xAh && multitail --no-repeat -c -s 2 /var/log/httpd/*_log
@@ -246,7 +287,12 @@ apachelog() {
 	fi
 }
 
-# Edit the Apache configuration
+# Edit the Apache configuration file appropriate for your system (httpd or apache2).
+#
+# This function looks for the Apache configuration file in the standard locations
+# for your system, and then uses the $EDITOR set in your shell configuration to
+# edit the configuration file. If a configuration file is not found, it will
+# suggest possible locations of the file using the `locate` command.
 apacheconfig() {
 	if [ -f /etc/httpd/conf/httpd.conf ]; then
 		svi /etc/httpd/conf/httpd.conf
@@ -260,6 +306,10 @@ apacheconfig() {
 }
 
 # Edit the PHP configuration file
+# This function looks for the PHP configuration file in the standard locations
+# for your system, and then uses the $EDITOR set in your shell configuration to
+# edit the configuration file. If a configuration file is not found, it will
+# suggest possible locations of the file using the `locate` command.
 phpconfig() {
 	if [ -f /etc/php.ini ]; then
 		svi /etc/php.ini
@@ -279,6 +329,10 @@ phpconfig() {
 }
 
 # Edit the MySQL configuration file
+# This function looks for the MySQL configuration file in the standard locations
+# for your system, and then uses the $EDITOR set in your shell configuration to
+# edit the configuration file. If a configuration file is not found, it will
+# suggest possible locations of the file using the `locate` command.
 mysqlconfig() {
 	if [ -f /etc/my.cnf ]; then
 		svi /etc/my.cnf
@@ -299,55 +353,53 @@ mysqlconfig() {
 	fi
 }
 
-
-# Trim leading and trailing spaces (for scripts)
+# Trim leading and trailing spaces from a string.
+# This function takes a string as an argument, trims any leading or trailing
+# whitespace characters, and prints the resulting string to stdout.
+#
+# This is useful for cleaning up strings that may contain trailing whitespace
+# characters, such as those returned by git config --get or other commands.
 trim() {
 	local var=$*
 	var="${var#"${var%%[![:space:]]*}"}" # remove leading whitespace characters
 	var="${var%"${var##*[![:space:]]}"}" # remove trailing whitespace characters
 	echo -n "$var"
 }
-# GitHub Titus Additions
 
-gcom() {
+# Commit all local changes with a message.
+git_commit() {
 	git add .
 	git commit -m "$1"
 }
-lazyg() {
-	git add .
-	git commit -m "$1"
+
+# Commit and push changes with a message.
+git_commit_push() {
+	git_commit "$1"
 	git push
 }
 
-function hb {
-    if [ $# -eq 0 ]; then
-        echo "No file path specified."
-        return
-    elif [ ! -f "$1" ]; then
-        echo "File path does not exist."
-        return
-    fi
-
-    uri="http://bin.christitus.com/documents"
-    response=$(curl -s -X POST -d "$(cat "$1")" "$uri")
-    if [ $? -eq 0 ]; then
-        hasteKey=$(echo $response | jq -r '.key')
-        echo "http://bin.christitus.com/$hasteKey"
-    else
-        echo "Failed to upload the document."
-    fi
-}
-
-# Babashka tasks terminal tab-completion
+# Complete babashka tasks with terminal tab-completion.
+#
+# This function is used by the bash complete command to generate a list of
+# possible completions for the bb command when the user presses the tab key.
+#
+# The function takes no arguments, and returns a list of possible completions
+# that are generated by running the bb tasks command and parsing the output.
 _bb_tasks() {
-    COMPREPLY=( $(compgen -W "$(bb tasks |tail -n +3 |cut -f1 -d ' ')" -- ${COMP_WORDS[COMP_CWORD]}) );
+	COMPREPLY=($(compgen -W "$(bb tasks | tail -n +3 | cut -f1 -d ' ')" -- ${COMP_WORDS[COMP_CWORD]}))
 }
 # autocomplete filenames as well
 complete -f -F _bb_tasks bb
 
 # Justfile recipes terminal tab-completion
+# Generate a list of possible completions for the `just` command.
+#
+# This function is used by the bash complete command to provide tab-completion
+# for `just` recipes. It extracts recipe names from the output of `just --list`
+# and uses them as possible completions. The function takes no arguments and
+# sets the COMPREPLY array with the completion options.
 _just_recipes() {
-    COMPREPLY=( $(compgen -W "$(just --list | awk 'NR>=2 {print $1}' | tr -d ':')" -- ${COMP_WORDS[COMP_CWORD]}) );
+	COMPREPLY=($(compgen -W "$(just --list | awk 'NR>=2 {print $1}' | tr -d ':')" -- ${COMP_WORDS[COMP_CWORD]}))
 }
 # autocomplete only recipes
 complete -F _just_recipes just
