@@ -30,7 +30,7 @@ command_timeout = 5000
 
 # You can also replace your username with a neat symbol like  to save some space
 [username]
-show_always = true
+show_always = false
 style_user = "bg:#3B4252"
 style_root = "bg:#3B4252"
 format = '[$user ]($style)'
@@ -123,7 +123,7 @@ style = "bg:#2E4053"
 format = '[ $symbol($version) ]($style)'
 
 [time]
-disabled = false
+disabled = true
 time_format = "%R"           # Hour:Minute Format
 style = "bg:#33658A"
 format = '[ $time ]($style)'
