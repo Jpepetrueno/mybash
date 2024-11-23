@@ -1,6 +1,8 @@
-## Overview of ChrisTitusTech's `.bashrc` Configuration
+## Overview of My `.bashrc` Configuration
 
 The `.bashrc` file is a script that runs every time a new terminal session is started in Unix-like operating systems. It is used to configure the shell session, set up aliases, define functions, and more, making the terminal easier to use and more powerful. Below is a summary of the key sections and functionalities defined in the provided `.bashrc` file.
+
+This is the personal `.bashrc` configuration file of **[Jpepetrueno](https://github.com/Jpepetrueno)**.
 
 ## How to install
 
@@ -40,7 +42,7 @@ chmod +x setup.sh
 
 ### Advanced Functions
 
-- **System Information**: Functions to display system information like `distribution()` to identify the Linux distribution.
+- **System Information**: Functions to display system information like `check_distro()` to identify the Linux distribution.
 - **Networking Utilities**: Tools to check internal and external IP addresses.
 - **Resource Monitoring**: Commands to monitor system resources like disk usage and open ports.
 

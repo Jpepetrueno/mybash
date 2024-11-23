@@ -16,17 +16,17 @@ if [ ! -d "$LINUXTOOLBOXDIR" ]; then
     echo "${GREEN}linuxtoolbox directory created: $LINUXTOOLBOXDIR${RC}"
 fi
 
-# Remove existing mybash directory in Linux Toolbox
+# Remove existing mybash directory in Linux Toolbox directory
 if [ -d "$LINUXTOOLBOXDIR/mybash" ]; then
     rm -rf "$LINUXTOOLBOXDIR/mybash"
 fi
 
-# Copy current mybash directory to Linux Toolbox
+# Move current mybash directory to Linux Toolbox directory
 echo "${YELLOW}Copying mybash directory into: $LINUXTOOLBOXDIR/mybash${RC}"
-if cp -r . "$LINUXTOOLBOXDIR/"; then
-    echo "${GREEN}Successfully copied mybash directory${RC}"
+if mv -r . "$LINUXTOOLBOXDIR/mybash"; then
+    echo "${GREEN}Successfully moved mybash directory${RC}"
 else
-    echo "${RED}Failed to copy mybash directory${RC}"
+    echo "${RED}Failed to move mybash directory${RC}"
     exit 1
 fi
 

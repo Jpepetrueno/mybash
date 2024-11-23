@@ -40,19 +40,30 @@ export LESS_TERMCAP_so=$'\E[01;44;33m'
 export LESS_TERMCAP_ue=$'\E[0m'
 export LESS_TERMCAP_us=$'\E[01;32m'
 
+# Use neovim for manpages
+export MANPAGER='nvim +Man!'
+
 #######################################################
-# ENVIRONMENT SETUP
+# SHELL SETTINGS
 #######################################################
+
+# Load global bash config
+if [ -f /etc/bashrc ]; then
+  . /etc/bashrc
+fi
 
 # Load Homebrew config
 if [ -d /home/linuxbrew/.linuxbrew ]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
-# Load global bash config
-if [ -f /etc/bashrc ]; then
-  . /etc/bashrc
-fi
+# shellcheck source=$HOME/.bash_*
+# Load custom bash configuration files from $HOME/.bash_*
+for file in "$HOME/.bash_aliases" "$HOME/.bash_functions" "$HOME/.bash_git"; do
+  if [ -f "$file" ]; then
+    source "$file"
+  fi
+done
 
 # Enable bash completion
 if [ -f /usr/share/bash-completion/bash_completion ]; then
@@ -61,45 +72,38 @@ elif [ -f /etc/bash_completion ]; then
   . /etc/bash_completion
 fi
 
-# Load custom aliases
-if [ -f "$HOME/.bash_aliases" ]; then
-  source $HOME/.bash_aliases
+# Check window size after each command
+shopt -s checkwinsize
+
+# Configure history settings to preserve command history
+# Append new commands to the history file instead of overwriting it
+shopt -s histappend
+# Save the current command to the history file after each execution
+PROMPT_COMMAND='history -a'
+
+# Call the function to configure the interactive prompt
+if [[ $- == *i* ]]; then
+  configure_interactive_prompt
 fi
 
-# Load custom script
+#######################################################
+# TOOLING
+#######################################################
+
+# Load custom ble.sh script if available
 if [ -f "$HOME/.local/share/blesh/ble.sh" ]; then
   source $HOME/.local/share/blesh/ble.sh
 fi
 
-# Load custom functions
-if [ -f "$HOME/.bash_functions" ]; then
-  source $HOME/.bash_functions
+# Load SDKMAN
+if [ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]; then
+  source "$HOME/.sdkman/bin/sdkman-init.sh"
 fi
-
-# Load git aliases
-if [ -f "$HOME/.bash_git" ]; then
-  source $HOME/.bash_git
-fi
-
-#######################################################
-# SHELL CONFIGURATION
-#######################################################
-
-# Check window size after each command
-shopt -s checkwinsize
-
-# Append to history instead of overwriting
-shopt -s histappend
-PROMPT_COMMAND='history -a'
-
-#######################################################
-# TOOL CONFIGURATION
-#######################################################
 
 # Load fzf configuration
 eval "$(fzf --bash)"
 
-# Load atuin configuration
+# Load atuin configuration (requires ble.sh to fully functionality)
 eval "$(atuin init bash)"
 
 # Load starship configuration
@@ -107,43 +111,3 @@ eval "$(starship init bash)"
 
 # Load zoxide configuration
 eval "$(zoxide init bash)"
-
-# Load SDKMAN
-if [ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]; then
-  source "$HOME/.sdkman/bin/sdkman-init.sh"
-fi
-
-#######################################################
-# COMMAND PROMPT CONFIGURATION
-#######################################################
-
-# Check if the shell is interactive
-x=${-%%i*}
-iatest=$((${#x} + 1))
-
-# Disable bell
-# If the shell is interactive, set the bell style to visible
-if [[ $iatest -gt 0 ]]; then
-  bind "set bell-style visible"
-fi
-
-# Bind Ctrl+F to "zi\n" (zoxide)
-# Map Ctrl+F to the command "zi\n" to use zoxide for directory navigation
-bind '"\C-f":"zi\n"'
-
-# Ignore case in autocompletion
-# If the shell is interactive, set completion to ignore case
-if [[ $iatest -gt 0 ]]; then
-  bind "set completion-ignore-case on"
-fi
-
-# Show autocompletion list automatically
-# If the shell is interactive, set show-all-if-ambiguous to On to show the autocompletion list automatically
-if [[ $iatest -gt 0 ]]; then
-  bind "set show-all-if-ambiguous On"
-fi
-
-# Enable Ctrl-S for history navigation
-# If the shell is interactive, disable the Ctrl-S key to prevent it from freezing the terminal
-# and enable it for history navigation instead
-[[ $- == *i* ]] && stty -ixon

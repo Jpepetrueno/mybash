@@ -1,5 +1,34 @@
 # .bash_functions
 
+# Configures interactive shell prompt settings to enhance user experience.
+# This includes disabling the system bell, binding Ctrl+F to zoxide directory navigation,
+# configuring case-insensitive autocompletion and automatic option listing,
+# and enabling Ctrl+S for history navigation.
+configure_interactive_prompt() {
+	# Check if the shell is interactive
+	local is_interactive=${-%%i*}
+	local iatest=$((${#is_interactive} + 1))
+
+	# Bind Ctrl+F to "zi\n" (zoxide)
+	bind '"\C-f":"zi\n"'
+
+	# Disable bell
+	# if ((iatest > 0)); then
+	# 	bind "set bell-style visible"
+	# fi
+
+	# Configure autocompletion
+	if ((iatest > 0)); then
+		bind "set completion-ignore-case on"
+		bind "set show-all-if-ambiguous On"
+	fi
+
+	# Enable Ctrl-S for history navigation
+	if [[ $- == *i* ]]; then
+		stty -ixon
+	fi
+}
+
 # Extracts one or more archives using the appropriate command based on the file extension
 # Supports various archive formats, including tar, zip, rar, 7z, and more
 # If the 'unp' command is not installed, this function can be used as a fallback
@@ -79,7 +108,7 @@ mvg() {
 
 # Create a directory and go to it.
 mkdirg() {
-	mkdir -p "$1"
+
 	cd "$1"
 }
 
@@ -118,31 +147,31 @@ pwdtail() {
 }
 
 # This function inspects /etc/os-release and returns a string identifying the
-# distribution type. The returned strings are one of: redhat, suse, debian,
+# check_distro type. The returned strings are one of: redhat, suse, debian,
 # gentoo, arch, slackware, or unknown.
-distribution() {
+check_distro() {
 	local dtype="unknown" # Default to unknown
 
 	# Use /etc/os-release for modern distro identification
 	if [ -r /etc/os-release ]; then
 		source /etc/os-release
 		case $ID in
-		fedora | rhel | centos)
+		fedora | rhel | centos | redhat)
 			dtype="redhat"
 			;;
-		sles | opensuse*)
+		sles | opensuse* | suse)
 			dtype="suse"
 			;;
-		ubuntu | debian)
+		ubuntu | debian | linuxmint | kali)
 			dtype="debian"
 			;;
-		gentoo)
+		gentoo | void)
 			dtype="gentoo"
 			;;
-		arch)
+		arch | manjaro | artix | parabola)
 			dtype="arch"
 			;;
-		slackware)
+		slackware*)
 			dtype="slackware"
 			;;
 		*)
@@ -167,9 +196,9 @@ distribution() {
 #
 # If the distribution type is not recognized, it will display the contents of
 # /etc/issue if available, and exit with an error code otherwise.
-ver() {
+show_os_version() {
 	local dtype
-	dtype=$(distribution)
+	dtype=$(check_distro)
 
 	case $dtype in
 	"redhat")
@@ -206,23 +235,22 @@ ver() {
 	esac
 }
 
-# Automatically install the needed support files for this .bashrc file based on the
-# Linux distribution type.
+# Automatically installs the necessary support files for this .bashrc file based on the detected Linux distribution.
+# Supported distributions include Red Hat/CentOS/Fedora, SuSE/OpenSuSE, Debian/Ubuntu, Arch Linux, and Slackware.
 #
-# Supported distributions:
+# Note: On Arch Linux, this function uses paru (a popular AUR helper) to install packages. If paru is not installed, it must be installed first.
 #
-# - Red Hat/CentOS/Fedora
-# - SuSE/OpenSuSE
-# - Debian/Ubuntu
-# - Arch Linux
-# - Slackware
-#
-# Note: On Arch Linux, this function will install the needed packages using paru, which
-# is a popular AUR helper. If you don't have paru installed, you'll need to install it
-# first.
+# Installs the following packages:
+# - multitail
+# - tree
+# - zoxide
+# - trash-cli
+# - fzf
+# - bash-completion
+# - fastfetch (on Debian and Arch Linux, fetches the latest release from GitHub)
 install_bashrc_support() {
 	local dtype
-	dtype=$(distribution)
+	dtype=$(check_distro)
 
 	case $dtype in
 	"redhat")
@@ -275,6 +303,7 @@ function whatsmyip() {
 }
 
 # View Apache logs
+#
 # This function will navigate to the Apache log directory
 # appropriate for your system (httpd or apache2), list all
 # files in reverse chronological order, and then use multitail
@@ -306,6 +335,7 @@ apacheconfig() {
 }
 
 # Edit the PHP configuration file
+#
 # This function looks for the PHP configuration file in the standard locations
 # for your system, and then uses the $EDITOR set in your shell configuration to
 # edit the configuration file. If a configuration file is not found, it will
@@ -329,6 +359,7 @@ phpconfig() {
 }
 
 # Edit the MySQL configuration file
+#
 # This function looks for the MySQL configuration file in the standard locations
 # for your system, and then uses the $EDITOR set in your shell configuration to
 # edit the configuration file. If a configuration file is not found, it will
@@ -354,6 +385,7 @@ mysqlconfig() {
 }
 
 # Trim leading and trailing spaces from a string.
+#
 # This function takes a string as an argument, trims any leading or trailing
 # whitespace characters, and prints the resulting string to stdout.
 #
