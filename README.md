@@ -30,26 +30,24 @@ chmod +x setup.sh
 
 ### System-Specific Aliases and Settings
 
-- **Editor Settings**: Sets `nvim` (NeoVim) as the default editor.
+- **Editor Settings**: Sets `nvim` (neovim) as the default editor.
 - **Conditional Aliases**: Depending on the system type (like Fedora), it sets specific aliases, e.g., replacing `cat` with `bat`.
 
 ### Enhancements and Utilities
 
 - **Color and Formatting**: Enhancements for command output readability using colors and formatting for tools like `ls`, `grep`, and `man`.
-- **Navigation Shortcuts**: Aliases to simplify directory navigation, e.g., `alias ..='cd ..'` to go up one directory.
 - **Safety Features**: Aliases for safer file operations, like using `trash` instead of `rm` for deleting files, to prevent accidental data loss.
 - **Extensive Zoxide support**: Easily navigate with `z`, `zi`, or pressing Ctrl+f to launch zi to see frequently used navigation directories.
 
 ### Advanced Functions
 
-- **System Information**: Functions to display system information like `check_distro()` to identify the Linux distribution.
+- **System Information**: Functions to display system information like `show_distro()` to identify the Linux distribution.
 - **Networking Utilities**: Tools to check internal and external IP addresses.
 - **Resource Monitoring**: Commands to monitor system resources like disk usage and open ports.
 
 ### Installation and Configuration Helpers
 
 - **Auto-Install**: A function `install_bashrc_support()` to automatically install necessary utilities based on the system type.
-- **Configuration Editors**: Functions to edit important configuration files directly, e.g., `apacheconfig()` for Apache server configurations.
 
 ### Conclusion
 

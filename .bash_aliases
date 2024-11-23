@@ -4,24 +4,15 @@
 # EG: the ls command is aliased, but to use the normal ls command you would type \ls
 
 # Aliases for common text editors
-alias e='emacsclient -c -a emacs'   # Open Emacs client
-alias vi='nvim'                     # Open Neovim as vi
-alias vim='nvim'                    # Open Neovim as vim
-alias se='sudo e'                   # Open Emacs client with sudo privileges
-alias svi='sudo nvim'               # Open Neovim with sudo privileges
-alias vis='nvim "+set si"'          # Open Neovim with smartindent
-alias ebrc='nvim $HOME/.bashrc'     # Edit .bashrc file using Neovim
-alias hlp='less $HOME/.bashrc_help' # Show help for this .bashrc file using less
+alias ema='emacsclient -c -a emacs'         # Open Emacs client
+alias sema='sudo ema'                       # Open Emacs client with sudo privileges
+alias snvim='sudo nvim'                     # Open Neovim with sudo privileges
+alias ebrc='nvim $HOME/linuxtoolbox/mybash' # Edit .bash files using Neovim
 
 # Aliases for navigating directories
 # Change directory aliases
-alias home='cd $HOME'        # Go to home directory
-alias bd='cd $OLDPWD'        # Go to previous directory (using $OLDPWD)
-alias cd..='cd ..'           # Go to parent directory
-alias ..='cd ..'             # Go to parent directory (alternative)
-alias ...='cd ../..'         # Go to grandparent directory
-alias ....='cd ../../..'     # Go to great-grandparent directory
-alias .....='cd ../../../..' # Go to great-great-grandparent directory
+alias home='cd $HOME' # Go to home directory
+alias bd='cd $OLDPWD' # Go to previous directory (using $OLDPWD)
 
 # Replace batcat with cat on Fedora as batcat is not available as a RPM in any form
 if command -v lsb_release >/dev/null; then
@@ -42,7 +33,7 @@ fi
 # Usage: sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
-# Show the current date and time
+# Show the current date and time in the format "YYYY-MM-DD Day of the Week HH:MM:SS Timezone"
 alias da='date "+%Y-%m-%d %A %T %Z"'
 
 # Modified commands with added functionality
@@ -54,10 +45,9 @@ alias ping='ping -c 10'                    # Send 10 ping requests by default
 alias less='less -R'                       # Enable raw output in less
 alias cls='clear'                          # Clear the terminal screen
 alias multitail='multitail --no-repeat -c' # Multitail with no repeat and color
-alias freshclam='sudo freshclam'           # Update ClamAV database with sudo privileges
 
 # Remove a directory and all files
-alias rmd='/bin/rm  --recursive --force --verbose ' # Forcefully delete directory and contents
+alias rmd='/bin/rm --recursive --force --verbose ' # Forcefully delete directory and contents
 
 # Alias's for multiple directory listing commands
 alias la='ls -Alh'                # List all files, including hidden files
@@ -135,9 +125,6 @@ alias sha1='openssl sha1' # Generate a SHA1 hash
 
 # Useful for avoiding accidental pastes or giving time to move the cursor to the correct position
 alias clickpaste='sleep 3; xdotool type "$(xclip -o -selection clipboard)"' # Paste clipboard contents after 3 seconds
-
-# IP address lookup
-alias whatismyip="whatsmyip" # Get the current public IP address
 
 # Alias's to change the directory
 alias web='cd /var/www/html' # Quickly navigate to the web server directory (Apache root directory)

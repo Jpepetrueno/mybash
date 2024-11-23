@@ -147,40 +147,42 @@ pwdtail() {
 }
 
 # This function inspects /etc/os-release and returns a string identifying the
-# check_distro type. The returned strings are one of: redhat, suse, debian,
+# show_distro type. The returned strings are one of: redhat, suse, debian,
 # gentoo, arch, slackware, or unknown.
-check_distro() {
-	local dtype="unknown" # Default to unknown
+show_distro() {
+	local distro_type="unknown" # Default to unknown
 
 	# Use /etc/os-release for modern distro identification
 	if [ -r /etc/os-release ]; then
 		source /etc/os-release
 		case $ID in
 		fedora | rhel | centos | redhat)
-			dtype="redhat"
+			distro_type="redhat"
 			;;
 		sles | opensuse* | suse)
-			dtype="suse"
+			distro_type="suse"
 			;;
 		ubuntu | debian | linuxmint | kali)
-			dtype="debian"
+			distro_type="debian"
 			;;
 		gentoo | void)
-			dtype="gentoo"
+			distro_type="gentoo"
 			;;
 		arch | manjaro | artix | parabola)
-			dtype="arch"
+			distro_type="arch"
 			;;
 		slackware*)
-			dtype="slackware"
+			distro_type="slackware"
 			;;
 		*)
-			# If ID is not recognized, keep dtype as unknown
+			# If ID is not recognized, keep distro_type as unknown
 			;;
 		esac
+	else
+		echo "Error: unable to read the /etc/os-release file"
 	fi
 
-	echo $dtype
+	echo $distro_type
 }
 
 # Show the current version of the operating system.
@@ -197,10 +199,10 @@ check_distro() {
 # If the distribution type is not recognized, it will display the contents of
 # /etc/issue if available, and exit with an error code otherwise.
 show_os_version() {
-	local dtype
-	dtype=$(check_distro)
+	local distro_type
+	distro_type=$(show_distro)
 
-	case $dtype in
+	case $distro_type in
 	"redhat")
 		if [ -s /etc/redhat-release ]; then
 			cat /etc/redhat-release
@@ -249,10 +251,10 @@ show_os_version() {
 # - bash-completion
 # - fastfetch (on Debian and Arch Linux, fetches the latest release from GitHub)
 install_bashrc_support() {
-	local dtype
-	dtype=$(check_distro)
+	local distro_type
+	distro_type=$(show_distro)
 
-	case $dtype in
+	case $distro_type in
 	"redhat")
 		sudo dnf install multitail tree zoxide trash-cli fzf bash-completion fastfetch
 		;;
@@ -282,132 +284,25 @@ install_bashrc_support() {
 	esac
 }
 
-# Print your internal and external IP addresses.
-#
-# This function will print your internal IP address using the ip or ifconfig
-# command, depending on the system, and your external IP address as reported
-# by ifconfig.me.
-function whatsmyip() {
-	# Internal IP Lookup.
-	if [ -e /sbin/ip ]; then
-		echo -n "Internal IP: "
-		/sbin/ip addr show wlan0 | grep "inet " | awk -F: '{print $1}' | awk '{print $2}'
-	else
-		echo -n "Internal IP: "
-		/sbin/ifconfig wlan0 | grep "inet " | awk -F: '{print $1} |' | awk '{print $2}'
-	fi
+# Displays internal and external IP addresses (IPv4 and IPv6)
+show_ip_info() {
+	# Internal IP Lookup
+	internal_ipv4=$(ip -4 addr show wlp41s0 | awk '$1 == "inet" {print $2}' | cut -d/ -f1)
+	internal_ipv6=$(ip -6 addr show wlp41s0 | awk '$1 == "inet6" {print $2}' | cut -d/ -f1)
+	echo "Internal IPv4 Address: $internal_ipv4"
+	echo "Internal IPv6 Address: $internal_ipv6"
 
 	# External IP Lookup
-	echo -n "External IP: "
-	curl -s ifconfig.me
-}
+	external_ipv4=$(curl -s ifconfig.me)
+	external_ipv6=$(curl -s ifconfig.me/ip6)
 
-# View Apache logs
-#
-# This function will navigate to the Apache log directory
-# appropriate for your system (httpd or apache2), list all
-# files in reverse chronological order, and then use multitail
-# to view the last two of them.
-apachelog() {
-	if [ -f /etc/httpd/conf/httpd.conf ]; then
-		cd /var/log/httpd && ls -xAh && multitail --no-repeat -c -s 2 /var/log/httpd/*_log
+	if [ -n "$external_ipv6" ]; then
+		echo "External IPv6 Address: $external_ipv6"
 	else
-		cd /var/log/apache2 && ls -xAh && multitail --no-repeat -c -s 2 /var/log/apache2/*.log
+		echo "External IPv6 Address: Not available"
 	fi
-}
 
-# Edit the Apache configuration file appropriate for your system (httpd or apache2).
-#
-# This function looks for the Apache configuration file in the standard locations
-# for your system, and then uses the $EDITOR set in your shell configuration to
-# edit the configuration file. If a configuration file is not found, it will
-# suggest possible locations of the file using the `locate` command.
-apacheconfig() {
-	if [ -f /etc/httpd/conf/httpd.conf ]; then
-		svi /etc/httpd/conf/httpd.conf
-	elif [ -f /etc/apache2/apache2.conf ]; then
-		svi /etc/apache2/apache2.conf
-	else
-		echo "Error: Apache config file could not be found."
-		echo "Searching for possible locations:"
-		sudo updatedb && locate httpd.conf && locate apache2.conf
-	fi
-}
-
-# Edit the PHP configuration file
-#
-# This function looks for the PHP configuration file in the standard locations
-# for your system, and then uses the $EDITOR set in your shell configuration to
-# edit the configuration file. If a configuration file is not found, it will
-# suggest possible locations of the file using the `locate` command.
-phpconfig() {
-	if [ -f /etc/php.ini ]; then
-		svi /etc/php.ini
-	elif [ -f /etc/php/php.ini ]; then
-		svi /etc/php/php.ini
-	elif [ -f /etc/php5/php.ini ]; then
-		svi /etc/php5/php.ini
-	elif [ -f /usr/bin/php5/bin/php.ini ]; then
-		svi /usr/bin/php5/bin/php.ini
-	elif [ -f /etc/php5/apache2/php.ini ]; then
-		svi /etc/php5/apache2/php.ini
-	else
-		echo "Error: php.ini file could not be found."
-		echo "Searching for possible locations:"
-		sudo updatedb && locate php.ini
-	fi
-}
-
-# Edit the MySQL configuration file
-#
-# This function looks for the MySQL configuration file in the standard locations
-# for your system, and then uses the $EDITOR set in your shell configuration to
-# edit the configuration file. If a configuration file is not found, it will
-# suggest possible locations of the file using the `locate` command.
-mysqlconfig() {
-	if [ -f /etc/my.cnf ]; then
-		svi /etc/my.cnf
-	elif [ -f /etc/mysql/my.cnf ]; then
-		svi /etc/mysql/my.cnf
-	elif [ -f /usr/local/etc/my.cnf ]; then
-		svi /usr/local/etc/my.cnf
-	elif [ -f /usr/bin/mysql/my.cnf ]; then
-		svi /usr/bin/mysql/my.cnf
-	elif [ -f ~/my.cnf ]; then
-		svi ~/my.cnf
-	elif [ -f ~/.my.cnf ]; then
-		svi ~/.my.cnf
-	else
-		echo "Error: my.cnf file could not be found."
-		echo "Searching for possible locations:"
-		sudo updatedb && locate my.cnf
-	fi
-}
-
-# Trim leading and trailing spaces from a string.
-#
-# This function takes a string as an argument, trims any leading or trailing
-# whitespace characters, and prints the resulting string to stdout.
-#
-# This is useful for cleaning up strings that may contain trailing whitespace
-# characters, such as those returned by git config --get or other commands.
-trim() {
-	local var=$*
-	var="${var#"${var%%[![:space:]]*}"}" # remove leading whitespace characters
-	var="${var%"${var##*[![:space:]]}"}" # remove trailing whitespace characters
-	echo -n "$var"
-}
-
-# Commit all local changes with a message.
-git_commit() {
-	git add .
-	git commit -m "$1"
-}
-
-# Commit and push changes with a message.
-git_commit_push() {
-	git_commit "$1"
-	git push
+	echo "External IPv4 Address: $external_ipv4"
 }
 
 # Complete babashka tasks with terminal tab-completion.
@@ -435,3 +330,30 @@ _just_recipes() {
 }
 # autocomplete only recipes
 complete -F _just_recipes just
+
+# Execute the exercism command with the given arguments and handle output.
+#
+# This function wraps the 'exercism' command, capturing its output into an array and printing it.
+# If the first argument is "download" and the last line of output is a directory, it changes
+# the current directory to that location. This is useful for quickly navigating to newly
+# downloaded exercises. The function returns 1 if unable to change directory.
+#
+# Arguments:
+#   $@ - Arguments passed to the exercism command.
+#
+# Usage:
+#   exercism download <exercise> - Downloads the exercise and changes into the directory.
+#   exercism submit <file> - Submits the specified file.
+exercism() {
+	local out
+	readarray -t out < <(command exercism "$@")
+	printf '%s\n' "${out[@]}"
+	if [[ $1 == "download" && -d "${out[-1]}" ]]; then
+		cd "${out[-1]}" || return 1
+	fi
+}
+
+# Run BATS tests with skipped tests included
+bats() {
+	BATS_RUN_SKIPPED=true command bats ./*.bats
+}
