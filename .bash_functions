@@ -108,8 +108,7 @@ mvg() {
 
 # Create a directory and go to it.
 mkdirg() {
-
-	cd "$1"
+	mkdir "$1" && cd "$1"
 }
 
 # Goes up a specified number of directories
