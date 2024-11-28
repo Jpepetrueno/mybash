@@ -251,7 +251,7 @@ install_zoxide() {
     fi
 
     # Attempt to install Zoxide using the official install script
-    if ! curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh; then
+    if ! curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh; then
         # If the installation fails, print an error message and exit with a
         # non-zero status code
         echo "${RED}Error installing Zoxide!${RC}"

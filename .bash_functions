@@ -9,23 +9,13 @@ configure_interactive_prompt() {
 	local is_interactive=${-%%i*}
 	local iatest=$((${#is_interactive} + 1))
 
-	# Bind Ctrl+F to "zi\n" (zoxide)
+	# Bind Ctrl+f to "zi\n" (zoxide)
 	bind '"\C-f":"zi\n"'
-
-	# Disable bell
-	# if ((iatest > 0)); then
-	# 	bind "set bell-style visible"
-	# fi
 
 	# Configure autocompletion
 	if ((iatest > 0)); then
 		bind "set completion-ignore-case on"
 		bind "set show-all-if-ambiguous On"
-	fi
-
-	# Enable Ctrl-S for history navigation
-	if [[ $- == *i* ]]; then
-		stty -ixon
 	fi
 }
 
@@ -244,7 +234,6 @@ show_os_version() {
 # Installs the following packages:
 # - multitail
 # - tree
-# - zoxide
 # - trash-cli
 # - fzf
 # - bash-completion
@@ -255,13 +244,13 @@ install_bashrc_support() {
 
 	case $distro_type in
 	"redhat")
-		sudo dnf install multitail tree zoxide trash-cli fzf bash-completion fastfetch
+		sudo dnf install multitail tree trash-cli fzf bash-completion fastfetch
 		;;
 	"suse")
-		sudo zypper install multitail tree zoxide trash-cli fzf bash-completion fastfetch
+		sudo zypper install multitail tree trash-cli fzf bash-completion fastfetch
 		;;
 	"debian")
-		sudo apt-get install multitail tree zoxide trash-cli fzf bash-completion
+		sudo apt-get install multitail tree trash-cli fzf bash-completion
 		# Fetch the latest fastfetch release URL for linux-amd64 deb file
 		FASTFETCH_URL=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep "browser_download_url.*linux-amd64.deb" | cut -d '"' -f 4)
 
@@ -272,7 +261,7 @@ install_bashrc_support() {
 		sudo apt-get install /tmp/fastfetch_latest_amd64.deb
 		;;
 	"arch")
-		sudo paru multitail tree zoxide trash-cli fzf bash-completion fastfetch
+		sudo paru multitail tree trash-cli fzf bash-completion fastfetch
 		;;
 	"slackware")
 		echo "No install support for Slackware"

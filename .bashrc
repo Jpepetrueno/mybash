@@ -59,7 +59,7 @@ fi
 
 # shellcheck source=$HOME/.bash_*
 # Load custom bash configuration files from $HOME/.bash_*
-for file in "$HOME/.bash_aliases" "$HOME/.bash_functions" "$HOME/.bash_git"; do
+for file in "$HOME/.bash_aliases" "$HOME/.bash_functions"; do
   if [ -f "$file" ]; then
     source "$file"
   fi
@@ -102,9 +102,6 @@ fi
 
 # Load fzf configuration
 eval "$(fzf --bash)"
-
-# Load atuin configuration (requires ble.sh to fully functionality)
-eval "$(atuin init bash)"
 
 # Load starship configuration
 eval "$(starship init bash)"
