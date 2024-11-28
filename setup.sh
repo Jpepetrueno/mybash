@@ -1,43 +1,19 @@
 #!/bin/sh -e
 
+# Clone the repository from the $HOME directory
+# Navigate to the $HOME/mybash directory and execute the script
+
 # Define color codes for terminal output
 RC='\033[0m'      # Reset color
 RED='\033[31m'    # Red color
 YELLOW='\033[33m' # Yellow color
 GREEN='\033[32m'  # Green color
 
-# Set Linux Toolbox directory path
-LINUXTOOLBOXDIR="$HOME/linuxtoolbox"
-
-# Create Linux Toolbox directory if it doesn't exist
-if [ ! -d "$LINUXTOOLBOXDIR" ]; then
-    echo "${YELLOW}Creating linuxtoolbox directory: $LINUXTOOLBOXDIR${RC}"
-    mkdir -p "$LINUXTOOLBOXDIR"
-    echo "${GREEN}linuxtoolbox directory created: $LINUXTOOLBOXDIR${RC}"
-fi
-
-# Remove existing mybash directory in Linux Toolbox directory
-if [ -d "$LINUXTOOLBOXDIR/mybash" ]; then
-    rm -rf "$LINUXTOOLBOXDIR/mybash"
-fi
-
-# Move current mybash directory to Linux Toolbox directory
-echo "${YELLOW}Copying mybash directory into: $LINUXTOOLBOXDIR/mybash${RC}"
-if mv -r . "$LINUXTOOLBOXDIR/mybash"; then
-    echo "${GREEN}Successfully moved mybash directory${RC}"
-else
-    echo "${RED}Failed to move mybash directory${RC}"
-    exit 1
-fi
-
 # Define top-level variables for easy access across functions
 PACKAGER="" # Package manager command
 SUDO_CMD="" # Privilege escalation command
 SUGROUP=""  # Superuser group name
 GITPATH=""  # Path to the Git repository
-
-# Change directory to the script's location
-cd "$LINUXTOOLBOXDIR/mybash" || exit
 
 # Function to check if a command exists
 command_exists() {
@@ -124,12 +100,7 @@ check_env() {
 # Function to install dependencies
 install_dependencies() {
     # Define dependencies to install
-    DEPENDENCIES='bash bash-completion tar bat tree multitail fastfetch wget unzip fontconfig'
-
-    # Add Neovim to dependencies if it's not already installed
-    if ! command_exists nvim; then
-        DEPENDENCIES="${DEPENDENCIES} neovim"
-    fi
+    DEPENDENCIES='bash bash-completion tar bat tree multitail fastfetch wget unzip fontconfig fzf neovim python3-neovim'
 
     # Print installation message
     echo "${YELLOW}Installing dependencies...${RC}"
@@ -174,6 +145,8 @@ install_dependencies() {
         ${SUDO_CMD} "${PACKAGER}" -iA nixos.bash nixos.bash-completion nixos.gnutar nixos.neovim nixos.bat nixos.tree nixos.multitail nixos.fastfetch nixos.pkgs.starship
     elif [ "$PACKAGER" = "dnf" ]; then
         # Install dependencies using DNF package manager
+        ${SUDO_CMD} "${PACKAGER}" check-update
+        ${SUDO_CMD} "${PACKAGER}" upgrade -y
         ${SUDO_CMD} "${PACKAGER}" install -y "${DEPENDENCIES}"
     else
         # Install dependencies using default package manager
@@ -230,18 +203,6 @@ install_starship() {
     fi
 }
 
-# Install Fzf if it's not already installed
-install_fzf() {
-    # Check if Fzf is already installed
-    if command_exists fzf; then
-        echo "Fzf is already installed"
-    else
-        # Clone the Fzf repository and install it
-        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-        ~/.fzf/install
-    fi
-}
-
 # Install Zoxide if it's not already installed
 install_zoxide() {
     # Check if Zoxide is already installed
@@ -257,59 +218,6 @@ install_zoxide() {
         echo "${RED}Error installing Zoxide!${RC}"
         exit 1
     fi
-}
-
-# Install Neovim if it's not already installed
-install_neovim() {
-    # Check if Neovim is already installed
-    if command_exists nvim; then
-        # If Neovim is already installed, print a message and exit early
-        echo "Neovim is already installed"
-        return
-    fi
-
-    # Determine the package manager being used
-    case "$PACKAGER" in
-    *apt)
-        # Install Neovim using the AppImage on Ubuntu-based systems
-        echo "Installing Neovim using the AppImage on Ubuntu-based systems"
-        if [ ! -d "/opt/neovim" ]; then
-            # Download the Neovim AppImage
-            curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
-            # Make the AppImage executable
-            chmod u+x nvim.appimage
-            # Extract the AppImage
-            ./nvim.appimage --appimage-extract
-            # Move the extracted directory to /opt/neovim
-            ${SUDO_CMD} mv squashfs-root /opt/neovim
-            # Create a symbolic link to AppRun
-            ${SUDO_CMD} ln -s /opt/neovim/AppRun /usr/bin/nvim
-        fi
-        ;;
-    *zypper)
-        # Install Neovim using Zypper on OpenSUSE
-        echo "Installing Neovim using Zypper on OpenSUSE"
-        ${SUDO_CMD} zypper refresh
-        ${SUDO_CMD} zypper -n install neovim
-        ;;
-    *dnf)
-        # Install Neovim using DNF on Fedora-based systems
-        echo "Installing Neovim using DNF on Fedora-based systems"
-        ${SUDO_CMD} dnf check-update
-        ${SUDO_CMD} dnf install -y neovim
-        ;;
-    *pacman)
-        # Install Neovim using Pacman on Arch-based systems
-        echo "Installing Neovim using Pacman on Arch-based systems"
-        ${SUDO_CMD} pacman -Syu
-        ${SUDO_CMD} pacman -S --noconfirm neovim
-        ;;
-    *)
-        # If no supported package manager is found, print an error message and exit
-        echo "No supported package manager found. Please install Neovim manually."
-        exit 1
-        ;;
-    esac
 }
 
 # Configure fastfetch by creating the necessary directories and symbolic links
@@ -384,9 +292,7 @@ link_config() {
 check_env
 install_dependencies
 install_starship
-install_fzf
 install_zoxide
-install_neovim
 configure_fastfetch
 
 if link_config; then
