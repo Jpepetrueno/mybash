@@ -341,7 +341,8 @@ exercism() {
 	fi
 }
 
-# Run BATS tests with skipped tests included
+# Run Bash BATS tests with skipped tests included
 bats() {
 	BATS_RUN_SKIPPED=true command bats ./*.bats
 }
+
