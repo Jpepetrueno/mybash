@@ -142,7 +142,7 @@ install_dependencies() {
         ${SUDO_CMD} "${PACKAGER}" -v "${DEPENDENCIES}"
     elif [ "$PACKAGER" = "nix-env" ]; then
         # Install dependencies using Nix package manager
-        ${SUDO_CMD} "${PACKAGER}" -iA nixos.bash nixos.bash-completion nixos.gnutar nixos.neovim nixos.bat nixos.tree nixos.multitail nixos.fastfetch nixos.pkgs.starship
+        ${SUDO_CMD} "${PACKAGER}" -iA nixos.bash nixos.bash-completion nixos.gnutar nixos.neovim nixos.bat nixos.tree nixos.multitail nixos.fastfetch
     elif [ "$PACKAGER" = "dnf" ]; then
         # Install dependencies using DNF package manager
         ${SUDO_CMD} "${PACKAGER}" check-update
@@ -183,23 +183,6 @@ install_dependencies() {
         else
             echo "Font '$FONT_NAME' not installed. Font URL is not accessible."
         fi
-    fi
-}
-
-# Install Starship if it's not already installed
-install_starship() {
-    # Check if Starship is already installed
-    if command_exists starship; then
-        echo "Starship is already installed"
-        return
-    fi
-
-    # Attempt to install Starship using the official install script
-    if ! curl -sS https://starship.rs/install.sh | sh; then
-        # If the installation fails, print an error message and exit with a
-        # non-zero status code
-        echo "${RED}Error installing Starship!${RC}"
-        exit 1
     fi
 }
 
@@ -247,8 +230,7 @@ configure_fastfetch() {
 }
 
 # Creates symbolic links to the bash configuration files (.bashrc,
-# .bash_aliases, .bash_functions) and the starship configuration file
-# (starship.toml) in the user's home directory.
+# .bash_aliases, .bash_functions) in the user's home directory.
 # Before creating the symbolic links, checks if old configuration files exist
 # and moves them to a backup location.
 link_config() {
@@ -279,19 +261,10 @@ link_config() {
             exit 1
         }
     done
-
-    # Create a symbolic link to the starship configuration file
-    echo "${YELLOW}Linking new starship config file...${RC}"
-    ln -svf "$GITPATH/starship.toml" "$USER_HOME/.config/starship.toml" || {
-        # Handle the error case where the symbolic link creation fails
-        echo "${RED}Failed to create symbolic link for starship.toml${RC}"
-        exit 1
-    }
 }
 
 check_env
 install_dependencies
-install_starship
 install_zoxide
 configure_fastfetch
 
