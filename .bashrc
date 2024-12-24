@@ -103,5 +103,8 @@ fi
 # Load fzf configuration
 eval "$(fzf --bash)"
 
+# Load starship configuration
+eval "$(starship init bash)"
+
 # Load zoxide configuration
 eval "$(zoxide init bash)"

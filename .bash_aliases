@@ -4,10 +4,11 @@
 # EG: the ls command is aliased, but to use the normal ls command you would type \ls
 
 # Aliases for common text editors
-alias em='emacsclient -c -a emacs'         # Open Emacs client
-alias sem='sudo em'                       # Open Emacs client with sudo privileges
-alias snvim='sudo nvim'                     # Open Neovim with sudo privileges
-alias ebrc='nvim $HOME/mybash' # Edit .bash files using Neovim
+alias e='emacs -fs'			 # Open Emacs fullscreen
+alias em='emacsclient -c -a emacs'       # Open Emacs client
+alias sem='sudo em'                      # Open Emacs client with sudo privileges
+alias snvim='sudo nvim'                  # Open Neovim with sudo privileges
+alias ebrc='nvim $HOME/mybash' 		 # Edit .bash files using Neovim
 
 # Aliases for navigating directories
 # Change directory aliases
